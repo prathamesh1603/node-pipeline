@@ -1,0 +1,79 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  MODULES,
+  MODULES_ACTIONS,
+} from "../../../../core/data/constants/moduleConstants";
+import Filter from "./Filter";
+import HasPermission from "../../../../core/common/wrapper/HasPermission";
+import CompanyFilter from "../../../../core/common/crmComponents/CompanyFilter";
+
+const CardHeader = ({
+  toggleLayout,
+  layout,
+  filterData,
+  setFilterData,
+  selectedCompany,
+  setSelectedCompany,
+}) => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  return (
+    <div className="card-header">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+        {/* Left Section */}
+        <div className="d-flex flex-wrap gap-3">
+          {/* Company Filter */}
+          <CompanyFilter
+            selectedCompany={selectedCompany}
+            setSelectedCompany={setSelectedCompany}
+            user={user}
+          />
+
+          <div className="d-flex align-items-center flex-wrap">
+            {/* Filter Component */}
+            <Filter
+              layout={layout}
+              toggleLayout={toggleLayout}
+              filterData={filterData}
+              setFilterData={setFilterData}
+            />
+          </div>
+        </div>
+
+        {/* Right Section */}
+        <div className="d-flex align-items-center gap-3">
+          {/* Add Lead Button */}
+          <HasPermission module={MODULES.LEADS} action={MODULES_ACTIONS.CREATE}>
+            <Link
+              to="#"
+              className="btn btn-primary d-flex align-items-center gap-2"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#offcanvas_add"
+            >
+              <i className="ti ti-square-rounded-plus" /> Add Lead
+            </Link>
+          </HasPermission>
+
+          {/* Layout Toggle */}
+          <div className="view-icons d-flex justify-content-center align-items-center">
+            <div
+              className={`view-icon ${layout === "list" ? "active" : ""}`}
+              onClick={() => toggleLayout("list")}
+            >
+              <i className="ti ti-list-tree" />
+            </div>
+            <div
+              className={`view-icon ${layout === "grid" ? "active" : ""}`}
+              onClick={() => toggleLayout("grid")}
+            >
+              <i className="ti ti-grid-dots" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CardHeader;

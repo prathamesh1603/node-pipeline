@@ -1,0 +1,116 @@
+import React, { useEffect, useRef, useState } from "react";
+import ApexCharts from "apexcharts";
+
+import DateRangePickerComponent from "../../../../core/common/crmComponents/DateRangePickerComponent";
+import { getDateRange } from "../../../../utils/helpers/helper";
+import BarChartLoader from "../../../../core/common/crmComponents/loaders/BarChartLoader";
+import { useDealsDashboardData } from "../../../mainMenu/dealsDashboard/hooks/useDealsDashboardData";
+
+const DealCountByProductsBarChart = ({ selectedCompany }) => {
+  const chartRef = useRef(null);
+
+  const [dateRange, setDateRange] = useState(getDateRange());
+
+  const { data, isLoading, isError, error } = useDealsDashboardData({
+    sort: "-createdTime",
+    ofCompany: selectedCompany,
+
+    groupFields: "productInterested.name",
+  });
+
+  const deals = data?.data?.data || [];
+
+  const totalDeals = deals.reduce((sum, deal) => sum + deal.count, 0);
+
+  // Process data for the chart
+  const chartData = deals.map((deal) => ({
+    x: deal._id.name || "Unknown Product", // Product name or fallback
+    y: deal.count || 0, // Count of deals
+  }));
+
+  useEffect(() => {
+    if (chartRef.current && chartData.length > 0) {
+      const maxCount = Math.max(...deals.map((deal) => deal.count), 10); // Default max to 10 if no data
+      const options = {
+        series: [
+          {
+            name: "Deals",
+            data: chartData,
+          },
+        ],
+        chart: {
+          type: "bar",
+          height: 275,
+        },
+        plotOptions: {
+          bar: {
+            borderRadius: 5,
+            columnWidth: "40%",
+          },
+        },
+        colors: ["#00918E"],
+        xaxis: {
+          type: "category",
+          categories: chartData.map((data) => data.x), // Product names
+          labels: {
+            style: {
+              fontSize: "10px",
+            },
+          },
+        },
+        yaxis: {
+          min: 0,
+          max: maxCount,
+          tickAmount: 5,
+          labels: {
+            formatter: function (value) {
+              return Math.round(value); // Integer labels
+            },
+          },
+        },
+        tooltip: {
+          x: {
+            formatter: function (value) {
+              return `Product: ${value}`; // Tooltip for x-axis
+            },
+          },
+          y: {
+            formatter: function (value) {
+              return `${value} Deals`; // Tooltip for y-axis
+            },
+          },
+        },
+      };
+
+      const chart = new ApexCharts(chartRef.current, options);
+      chart.render();
+
+      // Cleanup on unmount
+      return () => {
+        chart.destroy();
+      };
+    }
+  }, [chartData]);
+
+  return (
+    <div className="col-lg-6 d-flex">
+      <div className="card flex-fill">
+        <div className="card-header border-0 pb-0 d-flex gap-2">
+          <h4>
+            <i className="ti ti-grip-vertical me-1" />
+            Deals Count by Product
+          </h4>
+        </div>
+        <div className="card-body">
+          {totalDeals === 0 ? (
+            <p>No data available for this chart.</p>
+          ) : (
+            <div id="product-leads-chart" ref={chartRef} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DealCountByProductsBarChart;

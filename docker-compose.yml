@@ -1,0 +1,30 @@
+services:
+  backend:
+    build: ./test-be1
+    ports:
+      - "4000:4000"
+    environment:
+      - mongodb+srv://prasadparik:I7ikJPIAI1UKf2TI@cluster0.znws3vg.mongodb.net/CRM_DB
+    depends_on:
+      - mongo
+ 
+
+  frontend:
+    build: ./test-fe1
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      - API_URL=http://backend:4000  
+
+  mongo:
+    image: mongo:6
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
