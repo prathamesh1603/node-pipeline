@@ -5,6 +5,9 @@ yarn-debug.log
 yarn-error.log
 dist/
 build/
+README.md
+docker-compose.yml
+
 
 # Env files
 .env
